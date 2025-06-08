@@ -35,11 +35,11 @@ namespace SafeLinkApi.DTOs.Request
         public string NivelRisco { get; set; }
 
         /// <summary>
-        /// Identificador da região que está recebendo o alerta.
+        /// Nome da região que está recebendo o alerta.
         /// </summary>
         [Required]
-        [DefaultValue(1)]
-        [JsonPropertyName("idRegiao")]
-        public long IdRegiao { get; set; }
+        [DefaultValue("Centro")]
+        [JsonPropertyName("nomeRegiao")]
+        public string NomeRegiao { get; set; }
     }
 }

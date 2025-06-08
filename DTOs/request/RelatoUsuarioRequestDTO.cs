@@ -7,6 +7,7 @@ namespace SafeLinkApi.DTOs.Request
 {
     /// <summary>
     /// DTO utilizado para cadastrar um novo relato feito por um usuário do sistema.
+    /// Usa o email e o nome da região como identificadores externos.
     /// </summary>
     public class RelatoUsuarioRequestDTO
     {
@@ -27,19 +28,21 @@ namespace SafeLinkApi.DTOs.Request
         public string Mensagem { get; set; }
 
         /// <summary>
-        /// ID do usuário que realizou o relato.
+        /// E-mail do usuário que realizou o relato.
+        /// Usado para buscar o usuário no backend.
         /// </summary>
         [Required]
-        [DefaultValue(1)]
-        [JsonPropertyName("idUsuario")]
-        public long IdUsuario { get; set; }
+        [DefaultValue("usuario@email.com")]
+        [JsonPropertyName("emailUsuario")]
+        public string Email { get; set; }
 
         /// <summary>
-        /// ID da região associada ao relato.
+        /// Nome da região associada ao relato.
+        /// Usado para buscar a região no backend.
         /// </summary>
         [Required]
-        [DefaultValue(1)]
-        [JsonPropertyName("idRegiao")]
-        public long IdRegiao { get; set; }
+        [DefaultValue("Centro")]
+        [JsonPropertyName("nomeRegiao")]
+        public string NomeRegiao { get; set; }
     }
 }

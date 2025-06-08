@@ -34,11 +34,11 @@ namespace SafeLinkApi.DTOs.Request
         public string NivelPrevisto { get; set; }
 
         /// <summary>
-        /// Identificador da região associada à previsão.
+        /// Nome da região associada à previsão.
         /// </summary>
         [Required]
-        [DefaultValue(1)]
-        [JsonPropertyName("idRegiao")]
-        public long IdRegiao { get; set; }
+        [DefaultValue("Centro")]
+        [JsonPropertyName("nomeRegiao")]
+        public string NomeRegiao { get; set; }
     }
 }

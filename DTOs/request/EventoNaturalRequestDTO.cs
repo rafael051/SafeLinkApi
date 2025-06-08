@@ -6,7 +6,7 @@ namespace SafeLinkApi.DTOs.Request
 {
     /// <summary>
     /// DTO utilizado para registrar manualmente eventos naturais extremos no sistema.
-    /// Ex: enchentes, deslizamentos, secas, entre outros.
+    /// Agora aceita o nome da região (nomeRegiao) em vez do id numérico.
     /// </summary>
     public class EventoNaturalRequestDTO
     {
@@ -34,11 +34,11 @@ namespace SafeLinkApi.DTOs.Request
         public string? Descricao { get; set; }
 
         /// <summary>
-        /// Identificador da região onde o evento foi registrado.
+        /// Nome da região onde o evento foi registrado.
         /// </summary>
         [Required]
-        [DefaultValue(1)]
-        [JsonPropertyName("idRegiao")]
-        public long IdRegiao { get; set; }
+        [DefaultValue("Centro")]
+        [JsonPropertyName("nomeRegiao")]
+        public string NomeRegiao { get; set; }
     }
 }

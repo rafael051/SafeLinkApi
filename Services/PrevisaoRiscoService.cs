@@ -7,25 +7,25 @@ using SafeLinkApi.Models;
 namespace SafeLinkApi.Services
 {
     /// <summary>
-    /// Serviço responsável pela lógica de negócio relacionada à Previsão de Risco.
+    /// Serviço responsável pelas regras de negócio da entidade PrevisaoRisco.
     /// </summary>
     public class PrevisaoRiscoService
     {
         private readonly ApplicationDbContext _context;
-        private readonly RegiaoService _regiaoService;
 
-        public PrevisaoRiscoService(ApplicationDbContext context, RegiaoService regiaoService)
+        public PrevisaoRiscoService(ApplicationDbContext context)
         {
             _context = context;
-            _regiaoService = regiaoService;
         }
 
-        /// <summary>
-        /// Cria uma nova previsão de risco.
-        /// </summary>
+        // =====================================================
+        // POST: Criar nova previsão de risco
+        // =====================================================
         public async Task<PrevisaoRiscoResponseDTO> CriarAsync(PrevisaoRiscoRequestDTO dto)
         {
-            var regiao = await _regiaoService.BuscarPorIdAsync(dto.IdRegiao);
+            var regiao = await _context.Regioes
+                .FirstOrDefaultAsync(r => r.NomeRegiao == dto.NomeRegiao)
+                ?? throw new Exception("Região não encontrada.");
 
             var previsao = new PrevisaoRisco
             {
@@ -46,16 +46,17 @@ namespace SafeLinkApi.Services
                 GeradoEm = previsao.GeradoEm,
                 Fonte = previsao.Fonte,
                 NivelPrevisto = previsao.NivelPrevisto,
-                IdRegiao = previsao.IdRegiao
+                NomeRegiao = regiao.NomeRegiao
             };
         }
 
-        /// <summary>
-        /// Lista todas as previsões de risco cadastradas.
-        /// </summary>
+        // =====================================================
+        // GET: Listar todas as previsões de risco
+        // =====================================================
         public async Task<List<PrevisaoRiscoResponseDTO>> ListarAsync()
         {
             return await _context.PrevisoesRisco
+                .Include(p => p.Regiao)
                 .Select(p => new PrevisaoRiscoResponseDTO
                 {
                     Id = p.Id,
@@ -63,17 +64,21 @@ namespace SafeLinkApi.Services
                     GeradoEm = p.GeradoEm,
                     Fonte = p.Fonte,
                     NivelPrevisto = p.NivelPrevisto,
-                    IdRegiao = p.IdRegiao
+                    NomeRegiao = p.Regiao.NomeRegiao
                 }).ToListAsync();
         }
 
-        /// <summary>
-        /// Busca uma previsão de risco pelo ID.
-        /// </summary>
+        // =====================================================
+        // GET: Buscar previsão de risco por ID
+        // =====================================================
         public async Task<PrevisaoRiscoResponseDTO?> BuscarPorIdAsync(long id)
         {
-            var previsao = await _context.PrevisoesRisco.FindAsync(id);
-            if (previsao == null) return null;
+            var previsao = await _context.PrevisoesRisco
+                .Include(p => p.Regiao)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (previsao == null)
+                return null;
 
             return new PrevisaoRiscoResponseDTO
             {
@@ -82,26 +87,28 @@ namespace SafeLinkApi.Services
                 GeradoEm = previsao.GeradoEm,
                 Fonte = previsao.Fonte,
                 NivelPrevisto = previsao.NivelPrevisto,
-                IdRegiao = previsao.IdRegiao
+                NomeRegiao = previsao.Regiao.NomeRegiao
             };
         }
 
-        /// <summary>
-        /// Atualiza uma previsão de risco existente.
-        /// </summary>
+        // =====================================================
+        // PUT: Atualizar previsão de risco existente
+        // =====================================================
         public async Task<PrevisaoRiscoResponseDTO> AtualizarAsync(long id, PrevisaoRiscoRequestDTO dto)
         {
-            var previsao = await _context.PrevisoesRisco.FindAsync(id);
-            if (previsao == null)
-                throw new Exception("Previsão de risco não encontrada.");
+            var previsao = await _context.PrevisoesRisco.FindAsync(id)
+                ?? throw new Exception("Previsão de risco não encontrada.");
 
-            var regiao = await _regiaoService.BuscarPorIdAsync(dto.IdRegiao);
+            var regiao = await _context.Regioes
+                .FirstOrDefaultAsync(r => r.NomeRegiao == dto.NomeRegiao)
+                ?? throw new Exception("Região não encontrada.");
 
             previsao.GeradoEm = dto.GeradoEm;
             previsao.Fonte = dto.Fonte;
             previsao.NivelPrevisto = dto.NivelPrevisto;
             previsao.IdRegiao = regiao.Id;
 
+            _context.PrevisoesRisco.Update(previsao);
             await _context.SaveChangesAsync();
 
             return new PrevisaoRiscoResponseDTO
@@ -111,18 +118,17 @@ namespace SafeLinkApi.Services
                 GeradoEm = previsao.GeradoEm,
                 Fonte = previsao.Fonte,
                 NivelPrevisto = previsao.NivelPrevisto,
-                IdRegiao = previsao.IdRegiao
+                NomeRegiao = regiao.NomeRegiao
             };
         }
 
-        /// <summary>
-        /// Remove uma previsão de risco pelo ID.
-        /// </summary>
+        // =====================================================
+        // DELETE: Remover previsão de risco por ID
+        // =====================================================
         public async Task RemoverAsync(long id)
         {
-            var previsao = await _context.PrevisoesRisco.FindAsync(id);
-            if (previsao == null)
-                throw new Exception("Previsão de risco não encontrada.");
+            var previsao = await _context.PrevisoesRisco.FindAsync(id)
+                ?? throw new Exception("Previsão de risco não encontrada.");
 
             _context.PrevisoesRisco.Remove(previsao);
             await _context.SaveChangesAsync();

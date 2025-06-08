@@ -3,12 +3,11 @@ using SafeLinkApi.Data;
 using SafeLinkApi.DTOs.Request;
 using SafeLinkApi.DTOs.Response;
 using SafeLinkApi.Models;
-using SafeLinkApi.Services;
 
 namespace SafeLinkApi.Services
 {
     /// <summary>
-    /// Serviço responsável pela lógica de negócios relacionada à entidade Alerta.
+    /// Classe responsável pelas regras de negócio relacionadas à entidade Alerta.
     /// </summary>
     public class AlertaService
     {
@@ -22,11 +21,13 @@ namespace SafeLinkApi.Services
         }
 
         // =====================================================
-        // POST: Cadastrar um novo alerta
+        // POST: Criar um novo alerta
         // =====================================================
         public async Task<AlertaResponseDTO> CriarAsync(AlertaRequestDTO dto)
         {
-            var regiao = await _regiaoService.BuscarPorIdAsync(dto.IdRegiao);
+            var regiao = await _context.Regioes
+                .FirstOrDefaultAsync(r => r.NomeRegiao == dto.NomeRegiao)
+                ?? throw new Exception("Região não encontrada.");
 
             var alerta = new Alerta
             {
@@ -40,7 +41,15 @@ namespace SafeLinkApi.Services
             _context.Alertas.Add(alerta);
             await _context.SaveChangesAsync();
 
-            return MapearParaResponse(alerta);
+            return new AlertaResponseDTO
+            {
+                Id = alerta.Id,
+                CriadoEm = alerta.CriadoEm,
+                EmitidoEm = alerta.EmitidoEm,
+                Mensagem = alerta.Mensagem,
+                NivelRisco = alerta.NivelRisco,
+                NomeRegiao = regiao.NomeRegiao
+            };
         }
 
         // =====================================================
@@ -49,17 +58,40 @@ namespace SafeLinkApi.Services
         public async Task<List<AlertaResponseDTO>> ListarAsync()
         {
             return await _context.Alertas
-                .Select(a => MapearParaResponse(a))
+                .Include(a => a.Regiao)
+                .Select(a => new AlertaResponseDTO
+                {
+                    Id = a.Id,
+                    CriadoEm = a.CriadoEm,
+                    EmitidoEm = a.EmitidoEm,
+                    Mensagem = a.Mensagem,
+                    NivelRisco = a.NivelRisco,
+                    NomeRegiao = a.Regiao.NomeRegiao
+                })
                 .ToListAsync();
         }
 
         // =====================================================
-        // GET: Buscar um alerta por ID
+        // GET: Buscar alerta por ID
         // =====================================================
         public async Task<AlertaResponseDTO?> BuscarPorIdAsync(long id)
         {
-            var alerta = await _context.Alertas.FindAsync(id);
-            return alerta is null ? null : MapearParaResponse(alerta);
+            var alerta = await _context.Alertas
+                .Include(a => a.Regiao)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (alerta == null)
+                return null;
+
+            return new AlertaResponseDTO
+            {
+                Id = alerta.Id,
+                CriadoEm = alerta.CriadoEm,
+                EmitidoEm = alerta.EmitidoEm,
+                Mensagem = alerta.Mensagem,
+                NivelRisco = alerta.NivelRisco,
+                NomeRegiao = alerta.Regiao.NomeRegiao
+            };
         }
 
         // =====================================================
@@ -70,7 +102,10 @@ namespace SafeLinkApi.Services
             var alerta = await _context.Alertas.FindAsync(id)
                 ?? throw new Exception("Alerta não encontrado.");
 
-            var regiao = await _regiaoService.BuscarPorIdAsync(dto.IdRegiao);
+            var regiao = await _context.Regioes
+            .FirstOrDefaultAsync(r => r.NomeRegiao == dto.NomeRegiao)
+            ?? throw new Exception("Região não encontrada.");
+
 
             alerta.EmitidoEm = dto.EmitidoEm;
             alerta.Mensagem = dto.Mensagem;
@@ -80,11 +115,19 @@ namespace SafeLinkApi.Services
             _context.Alertas.Update(alerta);
             await _context.SaveChangesAsync();
 
-            return MapearParaResponse(alerta);
+            return new AlertaResponseDTO
+            {
+                Id = alerta.Id,
+                CriadoEm = alerta.CriadoEm,
+                EmitidoEm = alerta.EmitidoEm,
+                Mensagem = alerta.Mensagem,
+                NivelRisco = alerta.NivelRisco,
+                NomeRegiao = regiao.NomeRegiao
+            };
         }
 
         // =====================================================
-        // DELETE: Remover um alerta pelo ID
+        // DELETE: Remover alerta por ID
         // =====================================================
         public async Task RemoverAsync(long id)
         {
@@ -93,22 +136,6 @@ namespace SafeLinkApi.Services
 
             _context.Alertas.Remove(alerta);
             await _context.SaveChangesAsync();
-        }
-
-        // =====================================================
-        // Método auxiliar para mapear a entidade para o DTO de resposta
-        // =====================================================
-        private AlertaResponseDTO MapearParaResponse(Alerta alerta)
-        {
-            return new AlertaResponseDTO
-            {
-                Id = alerta.Id,
-                CriadoEm = alerta.CriadoEm,
-                EmitidoEm = alerta.EmitidoEm,
-                Mensagem = alerta.Mensagem,
-                NivelRisco = alerta.NivelRisco,
-                IdRegiao = alerta.IdRegiao
-            };
         }
     }
 }
