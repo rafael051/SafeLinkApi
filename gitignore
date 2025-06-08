@@ -1,0 +1,51 @@
+# Ignore para projetos .NET com Visual Studio
+
+# Build results
+bin/
+obj/
+[Bb]uild/
+[Ll]ogs/
+.vscode/
+.vs/
+
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# Rider
+.idea/
+*.sln.iml
+
+# Backup & temp files
+*.bak
+*.tmp
+~$*
+*.swp
+
+# ASP.NET
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Configs locais
+appsettings.Development.json
+*.secret.json
+
+# dotCover
+.idea/
+*.dotCover
+
+# Others
+_ReSharper*/
+*.ncrunch*
+*.orig
+*.rej
+*.DS_Store
+Thumbs.db
+desktop.ini
